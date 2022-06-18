@@ -9,23 +9,30 @@ public class World : MonoBehaviour
     public GameObject YearGO;
     public int week;
     public int year;
+    public bool paused;
 
     public void Construct()
     {
+        paused = true;
         week = 1;
         year = 0;
         updateUI();
     }
 
-    public void AdvanceWeek()
+    public bool AdvanceWeek()
     {
-        if (week == 52)
+        if (!paused)
         {
-            advanceYear();
-            week = 0;
+            if (week == 52)
+            {
+                advanceYear();
+                week = 0;
+            }
+            week += 1;
+            updateUI();
+            return true;
         }
-        week += 1;
-        updateUI();
+        return false;
     }
 
     void advanceYear()
@@ -37,5 +44,10 @@ public class World : MonoBehaviour
     {
         WeekGO.GetComponent<TMPro.TextMeshProUGUI>().text = week.ToString();
         YearGO.GetComponent<TMPro.TextMeshProUGUI>().text = year.ToString();
+    }
+
+    public void playButton()
+    {
+        paused = !paused;
     }
 }

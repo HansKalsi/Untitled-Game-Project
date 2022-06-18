@@ -15,6 +15,7 @@ public class Core : MonoBehaviour
     void Start()
     {
         startGame();
+        InvokeRepeating("advanceWorldWeek", 0f, 0.4f);
     }
 
     void startGame()
@@ -126,33 +127,35 @@ public class Core : MonoBehaviour
         }
         updateBoard();
     }
-    public void advanceWorldWeek()
+    void advanceWorldWeek()
     {
-        world.AdvanceWeek();
-        for (int i = 0; i < tiles.Count; i++)
+        if (world.AdvanceWeek())
         {
-            if (tiles[i] != null)
+            for (int i = 0; i < tiles.Count; i++)
             {
-                Tile t = tiles[i];
-                Nation nation = null;
-                for (int n = 0; n < nations.Count; n++)
+                if (tiles[i] != null)
                 {
-                    if (nations[n].ReturnColour() == t.owner)
+                    Tile t = tiles[i];
+                    Nation nation = null;
+                    for (int n = 0; n < nations.Count; n++)
                     {
-                        nation = nations[n];
-                        break;
+                        if (nations[n].ReturnColour() == t.owner)
+                        {
+                            nation = nations[n];
+                            break;
+                        }
                     }
-                }
 
-                if (nation != null)
-                {
-                    foreach (Pop p in t.population)
+                    if (nation != null)
                     {
-                        populationTriggers(p, t, nation);
-                    }
-                    foreach (Building b in t.buildings)
-                    {
-                        buildingTriggers(b, nation);
+                        foreach (Pop p in t.population)
+                        {
+                            populationTriggers(p, t, nation);
+                        }
+                        foreach (Building b in t.buildings)
+                        {
+                            buildingTriggers(b, nation);
+                        }
                     }
                 }
             }
@@ -256,17 +259,16 @@ public class Pop
     {
         string logMsg = "";
 
-        logMsg += "There are " + amount + " pops\n";
-        logMsg += "Their gender is " + (gender == true ? "Male" : "Female") + "\n";
-        logMsg += "They are " + age + " age\n";
-        logMsg += "Their profession is " + profession + "\n";
+        logMsg += "Population: " + amount + "\n";
+        logMsg += "Gender: " + (gender == true ? "Male" : "Female") + "\n";
+        logMsg += "Age: " + age + "\n";
+        logMsg += "Profession: " + profession + "\n";
         foreach (KeyValuePair<string, float> n in needs)
         {
-            logMsg += "Have need: " + n.Key + "\n";
-            logMsg += "Desire: " + n.Value + "\n";
+            logMsg += "Need: " + n.Key + " Desire: " + n.Value + "\n";
         }
-        logMsg += "Their quality is " + quality + "\n";
-        logMsg += "Their wealth is " + wealth + "\n";
+        logMsg += "Quality: " + quality + "\n";
+        logMsg += "Wealth: " + wealth + "\n";
 
         return logMsg;
     }
