@@ -21,6 +21,7 @@ public class Core : MonoBehaviour
     {
         world.Construct();
         generateTiles(100, 10, 10);
+        logTiles();
         generateNations(3);
     }
 
@@ -41,7 +42,6 @@ public class Core : MonoBehaviour
         }
         populateTiles();
         makeBoard(w, h);
-        logTiles();
         updateBoard();
     }
 
@@ -79,15 +79,15 @@ public class Core : MonoBehaviour
 
             foreach (Pop p in t.population)
             {
-                p.logDetails();
+                Debug.Log(p.logDetails());
             }
             foreach (Building b in t.buildings)
             {
-                b.logDetails();
+                Debug.Log(b.logDetails());
             }
             foreach (Resource r in t.resources)
             {
-                r.logDetails();
+                Debug.Log(r.logDetails());
             }
 
             Debug.Log("------------");
@@ -144,13 +144,12 @@ public class Core : MonoBehaviour
                     }
                 }
 
-                foreach (Pop p in t.population)
-                {
-                    populationTriggers(p, t);
-                }
-
                 if (nation != null)
                 {
+                    foreach (Pop p in t.population)
+                    {
+                        populationTriggers(p, t, nation);
+                    }
                     foreach (Building b in t.buildings)
                     {
                         buildingTriggers(b, nation);
@@ -159,11 +158,12 @@ public class Core : MonoBehaviour
             }
         }
     }
-
-    void populationTriggers(Pop p, Tile t)
+    #endregion
+    #region Triggers
+    void populationTriggers(Pop p, Tile t, Nation n)
     {
         // trigger each pops weekly actions
-        bool[] resp = p.AdvanceWeek(world);
+        bool[] resp = p.AdvanceWeek(world, n);
         // death_trigger
         if (resp[0])
         {
@@ -203,7 +203,8 @@ public class Pop
     public bool gender; //Male/Female
     public AgeENUM age; //Child/Adult/Elderly
     public ProfessionENUM profession; //Citizen/Farmer/Labourer/Levy
-    public string[] needs;
+    public Dictionary<string, float> needs = new Dictionary<string, float>();
+    // require KeyValuePair to be read ^
     public int quality; // Out of 10
     public int wealth; //Income from profession, spent on needs
     public int avgYearsToAge;
@@ -259,9 +260,10 @@ public class Pop
         logMsg += "Their gender is " + (gender == true ? "Male" : "Female") + "\n";
         logMsg += "They are " + age + " age\n";
         logMsg += "Their profession is " + profession + "\n";
-        foreach (var need in needs)
+        foreach (KeyValuePair<string, float> n in needs)
         {
-            logMsg += "Have need: " + need + "\n";
+            logMsg += "Have need: " + n.Key + "\n";
+            logMsg += "Desire: " + n.Value + "\n";
         }
         logMsg += "Their quality is " + quality + "\n";
         logMsg += "Their wealth is " + wealth + "\n";
@@ -269,16 +271,113 @@ public class Pop
         return logMsg;
     }
 
-    public bool[] AdvanceWeek(World w)
+    public bool[] AdvanceWeek(World w, Nation nation)
     {
         bool[] resp = new bool[] { false };
+        tickYearsToAge(ref resp);
+        needsEffects(nation);
+        // 
+        // 
+        return resp;
+    }
+
+    void tickYearsToAge(ref bool[] resp)
+    {
         avgYearsToAge -= 1;
         if (avgYearsToAge < 1)
         {
             ageUp(ref resp);
             calculateAvgYearsToAge();
         }
-        return resp;
+    }
+
+    void needsEffects(Nation nation)
+    {
+        foreach (KeyValuePair<string, float> n in needs.ToList())
+        {
+            // check desire trigger
+            if (n.Value >= 1)
+            {
+                if (attemptConsumption(n.Key, nation))
+                {
+                    needs[n.Key] -= 1f;
+                }
+            }
+            // if pop hasn't consumed within 3 months, take attrition
+            if (n.Value >= 3)
+            {
+                takeAttrition(n.Key);
+            }
+            // add desire for need (4 weeks for trigger)
+            needs[n.Key] += 0.25f;
+        }
+    }
+
+    void takeAttrition(string need)
+    {
+        switch (need)
+        {
+            case "food":
+                // 20% attrition for entire pop
+                amount = ((int)(amount * 0.8));
+                break;
+            case "iron":
+                Debug.Log("iron deficit");
+                break;
+            default:
+                Debug.Log("no attrition occurred");
+                break;
+        }
+    }
+
+    bool attemptConsumption(string need, Nation nation)
+    {
+        switch (need)
+        {
+            case "food":
+                if (wealth >= 1)
+                {
+                    if (nation.attemptFoodPurchase())
+                    {
+                        // successfully purchased food
+                        wealth -= 1;
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.Log("nation has no food stockpiled");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Debug.Log("pop doesn't have enough wealth to attempt to buy food");
+                    return false;
+                }
+            case "iron":
+                if (wealth >= 1)
+                {
+                    if (nation.attemptIronPurchase())
+                    {
+                        // successfully purchased iron
+                        wealth -= 1;
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.Log("nation has no iron stockpiled");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Debug.Log("pop doesn't have enough wealth to attempt to buy iron");
+                    return false;
+                }
+            default:
+                Debug.Log("no consumption occurred for: " + need);
+                return false;
+        }
     }
 }
 
@@ -286,7 +385,7 @@ public class Citizen : Pop
 {
     public Citizen(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
     {
-        needs = new string[] { "food" };
+        needs.Add("food", 0);
         profession = (ProfessionENUM)0;
     }
 }
@@ -295,7 +394,7 @@ public class Farmer : Pop
 {
     public Farmer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
     {
-        needs = new string[] { "food" };
+        needs.Add("food", 0);
         profession = (ProfessionENUM)1;
     }
 }
@@ -304,7 +403,7 @@ public class Labourer : Pop
 {
     public Labourer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
     {
-        needs = new string[] { "food" };
+        needs.Add("food", 0);
         profession = (ProfessionENUM)2;
     }
 }
@@ -313,7 +412,8 @@ public class Levy : Pop
 {
     public Levy(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
     {
-        needs = new string[] { "food", "iron" };
+        needs.Add("food", 0);
+        needs.Add("iron", 0);
         profession = (ProfessionENUM)3;
     }
 }
@@ -427,7 +527,7 @@ public class Building
     public bool[] AdvanceWeek(World w, Nation n)
     {
         bool[] resp = new bool[] { };
-        n.addResource(((int)type), output);
+        n.addResource(((int)type), collectFromBuilding());
         return resp;
     }
 
@@ -489,12 +589,14 @@ public class Nation
     public string name;
     public coloursENUM colour;
     public int[] resources = new int[3];
+    public int wealth;
 
     public Nation(string n, coloursENUM c, int[] startingResources)
     {
         name = n;
         colour = c;
         resources = startingResources;
+        wealth = 0;
     }
 
     public void addResource(int r, int amount)
@@ -506,9 +608,45 @@ public class Nation
         resources[r] -= amount;
     }
 
+    public void addWealth(int amount)
+    {
+        wealth += amount;
+    }
+    public void removeWealth(int amount)
+    {
+        wealth -= amount;
+    }
+
     public string ReturnColour()
     {
         return colour.ToString();
+    }
+
+    public bool attemptFoodPurchase()
+    {
+        if (resources[0] >= 1)
+        {
+            resources[0] -= 1;
+            addWealth(1);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public bool attemptIronPurchase()
+    {
+        if (resources[2] >= 1)
+        {
+            resources[2] -= 1;
+            addWealth(1);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 #endregion
