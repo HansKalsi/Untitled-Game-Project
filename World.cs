@@ -18,7 +18,7 @@ public class World : MonoBehaviour
         YearGO.GetComponent<TMPro.TextMeshProUGUI>().text = year.ToString();
     }
 
-    public void advanceWeek()
+    public void AdvanceWeek()
     {
         if (week == 52)
         {

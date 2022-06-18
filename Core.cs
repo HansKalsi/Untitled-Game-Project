@@ -1,19 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 using System.Threading.Tasks;
 
 public class Core : MonoBehaviour
 {
     public GameBoard gameBoard;
     List<Tile> tiles = new List<Tile>();
+    List<Nation> nations = new List<Nation>();
     public World world;
 
     // Start is called before the first frame update
     void Start()
     {
-        generateTiles(100, 10, 10);
+        startGame();
+    }
+
+    void startGame()
+    {
         world.Construct();
+        generateTiles(100, 10, 10);
+        generateNations(3);
+    }
+
+    void generateNations(int num)
+    {
+        for (int i = 0; i < num; i++)
+        {
+            nations.Add(new Nation(i.ToString(), (Nation.coloursENUM)i));
+        }
     }
 
     void generateTiles(int num, int w, int h)
@@ -111,13 +127,57 @@ public class Core : MonoBehaviour
     }
     public void advanceWorldWeek()
     {
-        world.advanceWeek();
+        world.AdvanceWeek();
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            if (tiles[i] != null)
+            {
+                Tile t = tiles[i];
+                Nation nation = null;
+                foreach (Nation n in nations)
+                {
+                    if (n.ReturnColour() == t.owner)
+                    {
+                        nation = n;
+                    }
+                }
+
+                foreach (Pop p in t.population)
+                {
+                    populationTriggers(p, t);
+                }
+                foreach (Building b in t.buildings)
+                {
+                    buildingTriggers(b, nation);
+                }
+            }
+        }
+    }
+
+    void populationTriggers(Pop p, Tile t)
+    {
+        Debug.Log(p.logDetails());
+        // trigger each pops weekly actions
+        bool[] resp = p.AdvanceWeek(world);
+        // death_trigger
+        if (resp[0])
+        {
+            // destroy pop
+            tiles.Remove(t);
+        }
+    }
+    void buildingTriggers(Building b, Nation n)
+    {
+        Debug.Log(b.logDetails());
+        // trigger each buildings weekly actions
+        bool[] resp = b.AdvanceWeek(world, n);
     }
     #endregion
 }
 #region Pops
 public class Pop
 {
+    #region Pop Variables
     public enum AgeENUM
     {
         Child,
@@ -138,6 +198,8 @@ public class Pop
     public string[] needs;
     public int quality; // Out of 10
     public int wealth; //Income from profession, spent on needs
+    public int avgYearsToAge;
+    #endregion
 
     public Pop(int num, bool g, int a, int q, int w)
     {
@@ -146,23 +208,39 @@ public class Pop
         age = (AgeENUM)a;
         quality = q;
         wealth = w;
+        calculateAvgYearsToAge();
+    }
+    void calculateAvgYearsToAge()
+    {
+        // Each pop will live a total of 70 years (Child-16-->Adult-55-->Elderly-70-->death)
+        switch (age)
+        {
+            case AgeENUM.Child:
+                avgYearsToAge = 832;
+                break;
+            case AgeENUM.Adult:
+                avgYearsToAge = 2028;
+                break;
+            case AgeENUM.Elderly:
+                avgYearsToAge = 780;
+                break;
+            default:
+                avgYearsToAge = 0;
+                break;
+        }
     }
 
-    void ageUp()
+    void ageUp(ref bool[] resp)
     {
         if (age == (AgeENUM)2)
         {
-            death();
+            // pop dies
+            resp[0] = true;
         }
         else
         {
             age += 1;
         }
-    }
-
-    void death()
-    {
-        // Delete pop since all dead
     }
 
     public string logDetails()
@@ -181,6 +259,18 @@ public class Pop
         logMsg += "Their wealth is " + wealth + "\n";
 
         return logMsg;
+    }
+
+    public bool[] AdvanceWeek(World w)
+    {
+        bool[] resp = new bool[] { false };
+        avgYearsToAge -= 1;
+        if (avgYearsToAge < 1)
+        {
+            ageUp(ref resp);
+            calculateAvgYearsToAge();
+        }
+        return resp;
     }
 }
 
@@ -318,11 +408,24 @@ public class Building
         Housing
     }
     public typeENUM type;
+    public int output;
 
     public string logDetails()
     {
         string logMsg = "Type of building: " + type + "\n";
         return logMsg;
+    }
+
+    public bool[] AdvanceWeek(World w, Nation n)
+    {
+        bool[] resp = new bool[] { };
+        n.addResource(((int)type), output);
+        return resp;
+    }
+
+    public int collectFromBuilding()
+    {
+        return output;
     }
 }
 public class Farm : Building
@@ -330,12 +433,7 @@ public class Farm : Building
     public Farm()
     {
         type = (typeENUM)0;
-    }
-
-    public int harvest()
-    {
-        // returns how much food was harvested
-        return 1;
+        output = 1;
     }
 }
 public class Labourer_Quarters : Building
@@ -343,12 +441,7 @@ public class Labourer_Quarters : Building
     public Labourer_Quarters()
     {
         type = (typeENUM)1;
-    }
-
-    public int work()
-    {
-        // returns how many materials were gathered
-        return 1;
+        output = 1;
     }
 }
 public class Mine : Building
@@ -356,12 +449,7 @@ public class Mine : Building
     public Mine()
     {
         type = (typeENUM)2;
-    }
-
-    public int dig()
-    {
-        // returns how much iron was harvested
-        return 1;
+        output = 1;
     }
 }
 public class Barracks : Building
@@ -369,12 +457,7 @@ public class Barracks : Building
     public Barracks()
     {
         type = (typeENUM)3;
-    }
-
-    public int train()
-    {
-        // returns how many levies were trained
-        return 1;
+        output = 1;
     }
 }
 public class Housing : Building
@@ -382,23 +465,24 @@ public class Housing : Building
     public Housing()
     {
         type = (typeENUM)4;
-    }
-
-    public int birth()
-    {
-        // returns how many children were born
-        return 1;
+        output = 1;
     }
 }
 #endregion
 #region Nations
 public class Nation
 {
+    public enum coloursENUM
+    {
+        Red,
+        Green,
+        Blue
+    }
     public string name;
-    public string colour;
+    public coloursENUM colour;
     public int[] resources = new int[3];
 
-    public Nation(string n, string c)
+    public Nation(string n, coloursENUM c)
     {
         name = n;
         colour = c;
@@ -412,6 +496,11 @@ public class Nation
     public void removeResource(int r, int amount)
     {
         resources[r] -= amount;
+    }
+
+    public string ReturnColour()
+    {
+        return colour.ToString();
     }
 }
 #endregion
