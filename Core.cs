@@ -276,8 +276,6 @@ public class Pop
         bool[] resp = new bool[] { false };
         tickYearsToAge(ref resp);
         needsEffects(nation);
-        // 
-        // 
         return resp;
     }
 
@@ -291,6 +289,7 @@ public class Pop
         }
     }
 
+    #region needs Effects
     void needsEffects(Nation nation)
     {
         foreach (KeyValuePair<string, float> n in needs.ToList())
@@ -322,7 +321,7 @@ public class Pop
                 amount = ((int)(amount * 0.8));
                 break;
             case "iron":
-                Debug.Log("iron deficit");
+                quality -= 1;
                 break;
             default:
                 Debug.Log("no attrition occurred");
@@ -379,6 +378,7 @@ public class Pop
                 return false;
         }
     }
+    #endregion
 }
 
 public class Citizen : Pop
