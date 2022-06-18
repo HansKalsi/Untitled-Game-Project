@@ -10,13 +10,10 @@ public class GameBoard : MonoBehaviour
     public Material greenMaterial;
     public Material blueMaterial;
 
-    public int width;
-    public int height;
-
     private GameBoardTile[,] boardPieces;
     public GameBoardTile[,] BoardPieces { get { return boardPieces; } }
 
-    public void GenerateGameBoard(ref List<Tile> tiles)
+    public void GenerateGameBoard(ref List<Tile> tiles, int width, int height)
     {
         int tracker = 0;
         boardPieces = new GameBoardTile[width, height];

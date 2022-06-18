@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class Core : MonoBehaviour
 {
@@ -10,19 +11,19 @@ public class Core : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        generateTiles(9);
-        logTiles();
-        makeBoard();
-        updateBoard();
+        generateTiles(100, 10, 10);
     }
 
-    void generateTiles(int num)
+    void generateTiles(int num, int w, int h)
     {
         for (int i = 0; i < num; i++)
         {
             tiles.Add(new Tile());
         }
         populateTiles();
+        makeBoard(w, h);
+        logTiles();
+        updateBoard();
     }
 
     void populateTiles()
@@ -48,7 +49,6 @@ public class Core : MonoBehaviour
                     break;
             }
         }
-
     }
 
     void logTiles()
@@ -75,9 +75,9 @@ public class Core : MonoBehaviour
         }
     }
 
-    void makeBoard()
+    void makeBoard(int width, int height)
     {
-        gameBoard.GenerateGameBoard(ref this);
+        gameBoard.GenerateGameBoard(ref tiles, width, height);
     }
     void updateBoard()
     {
