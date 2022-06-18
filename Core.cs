@@ -12,11 +12,12 @@ public class Core : MonoBehaviour
     {
         generateTiles(9);
         logTiles();
-        gameBoard.GenerateGameBoard(ref tiles);
+        makeBoard();
         updateBoard();
     }
 
-    void generateTiles(int num) {
+    void generateTiles(int num)
+    {
         for (int i = 0; i < num; i++)
         {
             tiles.Add(new Tile());
@@ -24,14 +25,16 @@ public class Core : MonoBehaviour
         populateTiles();
     }
 
-    void populateTiles() {
+    void populateTiles()
+    {
         // defaults
         foreach (Tile t in tiles)
         {
             t.population.Add(new Citizen(100, true, 1, 0, 100));
             t.population.Add(new Citizen(100, false, 1, 0, 100));
 
-            switch (Random.Range(0, 3)){
+            switch (Random.Range(0, 3))
+            {
                 case 0:
                     t.resources.Add(new Food());
                     break;
@@ -42,13 +45,14 @@ public class Core : MonoBehaviour
                     t.resources.Add(new Materials());
                     break;
                 default:
-                break;
+                    break;
             }
         }
 
     }
 
-    void logTiles() {
+    void logTiles()
+    {
         foreach (Tile t in tiles)
         {
             string msg = "Owner: " + t.owner + "\n";
@@ -71,11 +75,17 @@ public class Core : MonoBehaviour
         }
     }
 
-    void updateBoard() {
+    void makeBoard()
+    {
+        gameBoard.GenerateGameBoard(ref this);
+    }
+    void updateBoard()
+    {
         gameBoard.UpdateBoard(ref tiles);
     }
 
-    public void randomizeBoard() {
+    public void randomizeBoard()
+    {
         foreach (Tile t in tiles)
         {
             switch (Random.Range(0, 5))
@@ -98,13 +108,16 @@ public class Core : MonoBehaviour
     }
 }
 #region Pops
-public class Pop {
-    public enum AgeENUM {
+public class Pop
+{
+    public enum AgeENUM
+    {
         Child,
         Adult,
         Elderly
     }
-    public enum ProfessionENUM {
+    public enum ProfessionENUM
+    {
         Citizen,
         Farmer,
         Labourer,
@@ -118,7 +131,8 @@ public class Pop {
     public int quality; // Out of 10
     public int wealth; //Income from profession, spent on needs
 
-    public Pop(int num, bool g, int a, int q, int w) {
+    public Pop(int num, bool g, int a, int q, int w)
+    {
         amount = num;
         gender = g;
         age = (AgeENUM)a;
@@ -126,26 +140,33 @@ public class Pop {
         wealth = w;
     }
 
-    void ageUp() {
-        if (age == (AgeENUM)2) {
+    void ageUp()
+    {
+        if (age == (AgeENUM)2)
+        {
             death();
-        } else {
+        }
+        else
+        {
             age += 1;
         }
     }
 
-    void death() {
+    void death()
+    {
         // Delete pop since all dead
     }
 
-    public string logDetails() {
+    public string logDetails()
+    {
         string logMsg = "";
 
         logMsg += "There are " + amount + " pops\n";
         logMsg += "Their gender is " + (gender == true ? "Male" : "Female") + "\n";
         logMsg += "They are " + age + " age\n";
         logMsg += "Their profession is " + profession + "\n";
-        foreach(var need in needs){
+        foreach (var need in needs)
+        {
             logMsg += "Have need: " + need + "\n";
         }
         logMsg += "Their quality is " + quality + "\n";
@@ -155,105 +176,133 @@ public class Pop {
     }
 }
 
-public class Citizen : Pop {
-    public Citizen(int num, bool g, int a, int q, int w) : base(num, g, a, q, w) {
-        needs = new string[] {"food"};
+public class Citizen : Pop
+{
+    public Citizen(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
+    {
+        needs = new string[] { "food" };
         profession = (ProfessionENUM)0;
     }
 }
 
-public class Farmer : Pop {
-    public Farmer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w) {
-        needs = new string[] {"food"};
+public class Farmer : Pop
+{
+    public Farmer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
+    {
+        needs = new string[] { "food" };
         profession = (ProfessionENUM)1;
     }
 }
 
-public class Labourer : Pop {
-    public Labourer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w) {
-        needs = new string[] {"food"};
+public class Labourer : Pop
+{
+    public Labourer(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
+    {
+        needs = new string[] { "food" };
         profession = (ProfessionENUM)2;
     }
 }
 
-public class Levy : Pop {
-    public Levy(int num, bool g, int a, int q, int w) : base(num, g, a, q, w) {
-        needs = new string[] {"food", "iron"};
+public class Levy : Pop
+{
+    public Levy(int num, bool g, int a, int q, int w) : base(num, g, a, q, w)
+    {
+        needs = new string[] { "food", "iron" };
         profession = (ProfessionENUM)3;
     }
 }
 #endregion
 #region Resources
-public class Resource {
-    public enum typeENUM {
+public class Resource
+{
+    public enum typeENUM
+    {
         Food,
         Iron,
         Materials
     }
     public typeENUM type;
 
-    public string logDetails() {
+    public string logDetails()
+    {
         string logMsg = "Type of resource: " + type + "\n";
         return logMsg;
     }
 }
 
-public class Food : Resource {
-    public Food() {
+public class Food : Resource
+{
+    public Food()
+    {
         type = (typeENUM)0;
     }
 }
-public class Iron : Resource {
-    public Iron() {
+public class Iron : Resource
+{
+    public Iron()
+    {
         type = (typeENUM)1;
     }
 }
-public class Materials : Resource {
-    public Materials() {
+public class Materials : Resource
+{
+    public Materials()
+    {
         type = (typeENUM)2;
     }
 }
 #endregion
 #region Tiles
-public class Tile {
+public class Tile
+{
     public string owner;
     public List<Pop> population = new List<Pop>();
     public List<Building> buildings = new List<Building>();
     public List<Resource> resources = new List<Resource>();
 
-    public Tile() {
+    public Tile()
+    {
         owner = "Uncontrolled";
     }
 
-    public void updateOwner(string newOwner) {
+    public void updateOwner(string newOwner)
+    {
         owner = newOwner;
     }
 
-    public void addPop(Pop p) {
+    public void addPop(Pop p)
+    {
         population.Add(p);
     }
-    public void removePop(Pop p) {
+    public void removePop(Pop p)
+    {
         population.Remove(p);
     }
 
-    public void addBuilding(Building b) {
+    public void addBuilding(Building b)
+    {
         buildings.Add(b);
     }
-    public void removeBuilding(Building b) {
+    public void removeBuilding(Building b)
+    {
         buildings.Remove(b);
     }
 
-    public void addResource(Resource r) {
+    public void addResource(Resource r)
+    {
         resources.Add(r);
     }
-    public void removeResource(Resource r) {
+    public void removeResource(Resource r)
+    {
         resources.Remove(r);
     }
 }
 #endregion
 #region Buildings
-public class Building {
-    public enum typeENUM {
+public class Building
+{
+    public enum typeENUM
+    {
         Farm,
         Labourer_Quarters,
         Mine,
@@ -262,85 +311,107 @@ public class Building {
     }
     public typeENUM type;
 
-    public string logDetails() {
+    public string logDetails()
+    {
         string logMsg = "Type of building: " + type + "\n";
         return logMsg;
     }
 }
-public class Farm : Building {
-    public Farm() {
+public class Farm : Building
+{
+    public Farm()
+    {
         type = (typeENUM)0;
     }
 
-    public int harvest() {
+    public int harvest()
+    {
         // returns how much food was harvested
         return 1;
     }
 }
-public class Labourer_Quarters : Building {
-    public Labourer_Quarters() {
+public class Labourer_Quarters : Building
+{
+    public Labourer_Quarters()
+    {
         type = (typeENUM)1;
     }
 
-    public int work() {
+    public int work()
+    {
         // returns how many materials were gathered
         return 1;
     }
 }
-public class Mine : Building {
-    public Mine() {
+public class Mine : Building
+{
+    public Mine()
+    {
         type = (typeENUM)2;
     }
 
-    public int dig() {
+    public int dig()
+    {
         // returns how much iron was harvested
         return 1;
     }
 }
-public class Barracks : Building {
-    public Barracks() {
+public class Barracks : Building
+{
+    public Barracks()
+    {
         type = (typeENUM)3;
     }
 
-    public int train() {
+    public int train()
+    {
         // returns how many levies were trained
         return 1;
     }
 }
-public class Housing : Building {
-    public Housing() {
+public class Housing : Building
+{
+    public Housing()
+    {
         type = (typeENUM)4;
     }
 
-    public int birth() {
+    public int birth()
+    {
         // returns how many children were born
         return 1;
     }
 }
 #endregion
 #region Nations
-public class Nation {
+public class Nation
+{
     public string name;
     public string colour;
     public int[] resources = new int[3];
 
-    public Nation(string n, string c) {
+    public Nation(string n, string c)
+    {
         name = n;
         colour = c;
-        resources = new int[3] {0, 0, 0};
+        resources = new int[3] { 0, 0, 0 };
     }
 
-    public void addResource(int r, int amount) {
+    public void addResource(int r, int amount)
+    {
         resources[r] += amount;
     }
-    public void removeResource(int r, int amount) {
+    public void removeResource(int r, int amount)
+    {
         resources[r] -= amount;
     }
 }
 #endregion
 #region Events
-public class Event {
-    public enum typeENUM {
+public class Event
+{
+    public enum typeENUM
+    {
         Migration,
         Crop_Harvest
     }
@@ -349,25 +420,31 @@ public class Event {
     public string effect;
 }
 
-public class MigrationEvent : Event {
-    public MigrationEvent() {
+public class MigrationEvent : Event
+{
+    public MigrationEvent()
+    {
         type = (typeENUM)0;
         description = "Migrants have arrived!";
         effect = "You gain 100 citizens";
     }
 
-    public void triggerEffect(Pop p) {
+    public void triggerEffect(Pop p)
+    {
         p.amount += 100;
     }
 }
-public class Crop_HarvestEvent : Event {
-    public Crop_HarvestEvent() {
+public class Crop_HarvestEvent : Event
+{
+    public Crop_HarvestEvent()
+    {
         type = (typeENUM)1;
         description = "Bad crop harvest!";
         effect = "You lose 100 food";
     }
 
-    public void triggerEffect(Nation n) {
+    public void triggerEffect(Nation n)
+    {
         n.removeResource(0, 100);
     }
 }

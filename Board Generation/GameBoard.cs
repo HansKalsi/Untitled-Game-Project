@@ -30,7 +30,8 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-    public void UpdateBoard(ref List<Tile> tiles) {
+    public void UpdateBoard(ref List<Tile> tiles)
+    {
         int tracker = 0;
         foreach (GameBoardTile bP in boardPieces)
         {

@@ -10,14 +10,17 @@ public class BoardTileClick : MonoBehaviour
     GameObject formDataREF;
     Tile tileREF;
 
-    void OnMouseOver() { 
-        if (Input.GetMouseButtonDown(0)) {
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
             popUp.SetActive(true);
             formDataREF.GetComponent<TMPro.TextMeshProUGUI>().text = logTile();
-        } 
+        }
     }
 
-    string logTile() {
+    string logTile()
+    {
         string msg = "Owner: " + tileREF.owner + "\n";
         foreach (Pop p in tileREF.population)
         {
@@ -34,7 +37,8 @@ public class BoardTileClick : MonoBehaviour
         return msg;
     }
 
-    public void BoardTileClickSetUp(GameObject p, GameObject fD, ref List<Tile> t, int tCount) {
+    public void BoardTileClickSetUp(GameObject p, GameObject fD, ref List<Tile> t, int tCount)
+    {
         popUp = p;
         formDataREF = fD;
         tileREF = t[tCount];

@@ -13,7 +13,8 @@ public class GameBoardTile : MonoBehaviour
         this.transform.position = Vector3.right * x + Vector3.up * y;
     }
 
-    public void updateMaterial(Material m) {
+    public void updateMaterial(Material m)
+    {
         GetComponent<Renderer>().material = m;
     }
 }
