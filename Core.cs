@@ -28,7 +28,8 @@ public class Core : MonoBehaviour
     {
         for (int i = 0; i < num; i++)
         {
-            nations.Add(new Nation(i.ToString(), (Nation.coloursENUM)i));
+            int[] startingResources = new int[3] { 1000, 200, 100 };
+            nations.Add(new Nation(i.ToString(), (Nation.coloursENUM)i, startingResources));
         }
     }
 
@@ -134,11 +135,12 @@ public class Core : MonoBehaviour
             {
                 Tile t = tiles[i];
                 Nation nation = null;
-                foreach (Nation n in nations)
+                for (int n = 0; n < nations.Count; n++)
                 {
-                    if (n.ReturnColour() == t.owner)
+                    if (nations[n].ReturnColour() == t.owner)
                     {
-                        nation = n;
+                        nation = nations[n];
+                        break;
                     }
                 }
 
@@ -146,9 +148,13 @@ public class Core : MonoBehaviour
                 {
                     populationTriggers(p, t);
                 }
-                foreach (Building b in t.buildings)
+
+                if (nation != null)
                 {
-                    buildingTriggers(b, nation);
+                    foreach (Building b in t.buildings)
+                    {
+                        buildingTriggers(b, nation);
+                    }
                 }
             }
         }
@@ -156,7 +162,6 @@ public class Core : MonoBehaviour
 
     void populationTriggers(Pop p, Tile t)
     {
-        Debug.Log(p.logDetails());
         // trigger each pops weekly actions
         bool[] resp = p.AdvanceWeek(world);
         // death_trigger
@@ -165,12 +170,15 @@ public class Core : MonoBehaviour
             // destroy pop
             tiles.Remove(t);
         }
+
+        Debug.Log(p.logDetails());
     }
     void buildingTriggers(Building b, Nation n)
     {
-        Debug.Log(b.logDetails());
         // trigger each buildings weekly actions
         bool[] resp = b.AdvanceWeek(world, n);
+
+        Debug.Log(b.logDetails());
     }
     #endregion
 }
@@ -482,11 +490,11 @@ public class Nation
     public coloursENUM colour;
     public int[] resources = new int[3];
 
-    public Nation(string n, coloursENUM c)
+    public Nation(string n, coloursENUM c, int[] startingResources)
     {
         name = n;
         colour = c;
-        resources = new int[3] { 0, 0, 0 };
+        resources = startingResources;
     }
 
     public void addResource(int r, int amount)

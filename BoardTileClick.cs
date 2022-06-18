@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class BoardTileClick : MonoBehaviour
 {
@@ -14,8 +15,22 @@ public class BoardTileClick : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            popUp.SetActive(true);
-            formDataREF.GetComponent<TMPro.TextMeshProUGUI>().text = logTile();
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.tag == "Board_Piece")
+                {
+                    popUp.SetActive(true);
+                    formDataREF.GetComponent<TMPro.TextMeshProUGUI>().text = logTile();
+                }
+
+            }
+
         }
     }
 
