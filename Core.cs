@@ -1,28 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class Core : MonoBehaviour
 {
     public GameBoard gameBoard;
     List<Tile> tiles = new List<Tile>();
+    public World world;
 
     // Start is called before the first frame update
     void Start()
     {
-        generateTiles(9);
-        logTiles();
-        makeBoard();
-        updateBoard();
+        generateTiles(100, 10, 10);
+        world.Construct();
     }
 
-    void generateTiles(int num)
+    void generateTiles(int num, int w, int h)
     {
         for (int i = 0; i < num; i++)
         {
             tiles.Add(new Tile());
         }
         populateTiles();
+        makeBoard(w, h);
+        logTiles();
+        updateBoard();
     }
 
     void populateTiles()
@@ -48,7 +51,6 @@ public class Core : MonoBehaviour
                     break;
             }
         }
-
     }
 
     void logTiles()
@@ -75,15 +77,16 @@ public class Core : MonoBehaviour
         }
     }
 
-    void makeBoard()
+    void makeBoard(int width, int height)
     {
-        gameBoard.GenerateGameBoard(ref this);
+        gameBoard.GenerateGameBoard(ref tiles, width, height);
     }
     void updateBoard()
     {
         gameBoard.UpdateBoard(ref tiles);
     }
 
+    #region Button Events
     public void randomizeBoard()
     {
         foreach (Tile t in tiles)
@@ -106,6 +109,11 @@ public class Core : MonoBehaviour
         }
         updateBoard();
     }
+    public void advanceWorldWeek()
+    {
+        world.advanceWeek();
+    }
+    #endregion
 }
 #region Pops
 public class Pop
