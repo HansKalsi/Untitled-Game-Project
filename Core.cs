@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 
 public class Core : MonoBehaviour
 {
@@ -10,12 +11,16 @@ public class Core : MonoBehaviour
     List<Tile> tiles = new List<Tile>();
     List<Nation> nations = new List<Nation>();
     public World world;
+    public GameObject wealthTextREF;
+    public GameObject foodTextREF;
+    public GameObject matsTextREF;
+    public GameObject ironTextREF;
 
     // Start is called before the first frame update
     void Start()
     {
         startGame();
-        InvokeRepeating("advanceWorldWeek", 0f, 0.4f);
+        InvokeRepeating("advanceWorldWeek", 0f, 0.25f);
     }
 
     void startGame()
@@ -127,6 +132,7 @@ public class Core : MonoBehaviour
         }
         updateBoard();
     }
+    #endregion
     void advanceWorldWeek()
     {
         if (world.AdvanceWeek())
@@ -159,9 +165,10 @@ public class Core : MonoBehaviour
                     }
                 }
             }
+            updateTopNavUI((nations[0].wealth).ToString(), (nations[0].resources[0]).ToString(), (nations[0].resources[1]).ToString(), (nations[0].resources[2]).ToString());
         }
     }
-    #endregion
+
     #region Triggers
     void populationTriggers(Pop p, Tile t, Nation n)
     {
@@ -184,6 +191,14 @@ public class Core : MonoBehaviour
         Debug.Log(b.logDetails());
     }
     #endregion
+
+    void updateTopNavUI(string wText, string fText, string mText, string iText)
+    {
+        wealthTextREF.GetComponent<TMPro.TextMeshProUGUI>().text = wText;
+        foodTextREF.GetComponent<TMPro.TextMeshProUGUI>().text = fText;
+        matsTextREF.GetComponent<TMPro.TextMeshProUGUI>().text = mText;
+        ironTextREF.GetComponent<TMPro.TextMeshProUGUI>().text = iText;
+    }
 }
 #region Pops
 public class Pop
