@@ -7,11 +7,13 @@ public class Core : MonoBehaviour
 {
     public GameBoard gameBoard;
     List<Tile> tiles = new List<Tile>();
+    public World world;
 
     // Start is called before the first frame update
     void Start()
     {
         generateTiles(100, 10, 10);
+        world.Construct();
     }
 
     void generateTiles(int num, int w, int h)
@@ -84,6 +86,7 @@ public class Core : MonoBehaviour
         gameBoard.UpdateBoard(ref tiles);
     }
 
+    #region Button Events
     public void randomizeBoard()
     {
         foreach (Tile t in tiles)
@@ -106,6 +109,11 @@ public class Core : MonoBehaviour
         }
         updateBoard();
     }
+    public void advanceWorldWeek()
+    {
+        world.advanceWeek();
+    }
+    #endregion
 }
 #region Pops
 public class Pop
