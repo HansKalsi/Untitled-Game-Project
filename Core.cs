@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
 
+#region Core
 public class Core : MonoBehaviour
 {
     public GameBoard gameBoard;
@@ -200,6 +201,7 @@ public class Core : MonoBehaviour
         ironTextREF.GetComponent<TMPro.TextMeshProUGUI>().text = iText;
     }
 }
+#endregion
 #region Pops
 public class Pop
 {
@@ -396,6 +398,28 @@ public class Pop
         }
     }
     #endregion
+
+    public Pop ConvertProfession(int newProfession)
+    {
+        Pop newPop;
+        switch (newProfession)
+        {
+            case 1:
+                newPop = new Farmer(amount, gender, ((int)age), quality, wealth);
+                break;
+            case 2:
+                newPop = new Labourer(amount, gender, ((int)age), quality, wealth);
+                break;
+            case 3:
+                newPop = new Levy(amount, gender, ((int)age), quality, wealth);
+                break;
+            default:
+                newPop = new Citizen(amount, gender, ((int)age), quality, wealth);
+                break;
+        }
+        newPop.avgYearsToAge = avgYearsToAge;
+        return newPop;
+    }
 }
 
 public class Citizen : Pop
